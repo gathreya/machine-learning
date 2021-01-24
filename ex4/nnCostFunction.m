@@ -61,25 +61,53 @@ Theta2_grad = zeros(size(Theta2));
 %               the regularization separately and then add them to Theta1_grad
 %               and Theta2_grad from Part 2.
 %
+% 
+X = [ones(m, 1) X];
+    Z1 = Theta1 * X';
+    A = sigmoid(Z1);
+    A = A';
+    A = [ones(m, 1) A];
+    h = sigmoid(A * Theta2');
+    yvec = zeros(num_labels, m);
+    for i = 1 : m
+      yvec(y(i), i) = 1;
+    end
+    temp = (-yvec' .* log(h)) - ((1-yvec)' .* log(1-h)); %temp 5000 x 10
+    J = mean(sum(temp, 2));
+    
+    Theta1_squared = (Theta1(:, [2:end])).^2;
+    Theta2_squared = (Theta2(:, [2:end])).^2;
 
+    Theta1_sum = sum(Theta1_squared, 'all');
+    Theta2_sum = sum(Theta2_squared, 'all');
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    reg = (lambda / (2 * m)) * (Theta1_sum + Theta2_sum);
+    J = J + reg;
+    
+    
+    for t = 1:m
+      a1 = X(t,:);
+      z2 = Theta1 * a1';
+      a2 = sigmoid(z2);
+      a2 = [1; a2];
+      z3 = Theta2 * a2;
+      a3 = sigmoid(z3);
+      
+      yi = zeros(num_labels, 1);
+      yi(y(t)) = 1;
+      delta3 = a3 - yi;
+      temp = (Theta2' * delta3);
+      delta2 = temp(2:end, :) .* sigmoidGradient(z2);
+      
+      Theta1_grad = Theta1_grad + delta2 * a1;
+      Theta2_grad = Theta2_grad + delta3 * a2';
+    end
+    
+    % Gradient
+    Theta1_grad = Theta1_grad / m;
+    Theta2_grad = Theta2_grad / m;
+    
+   
 % -------------------------------------------------------------
 
 % =========================================================================
@@ -87,5 +115,64 @@ Theta2_grad = zeros(size(Theta2));
 % Unroll gradients
 grad = [Theta1_grad(:) ; Theta2_grad(:)];
 
+
+%%%%%%%%
+% 
+% % Feedforward
+%     % compute hidden layer
+%     X = [ones(m,1) X];
+%     A = [ones(m,1) sigmoid(X * Theta1')];
+%     h = sigmoid(A * Theta2');
+% 
+%     %reg_term = sum(theta(2:end) .^ 2) * lambda / (2 * m);
+%     
+%     class_one_minus_y = ones(m,num_labels);
+%     class_y = zeros(m,num_labels);
+%     
+%     for item = 1:m
+%        class_one_minus_y(item,y(item)) = 0;
+%        class_y(item, y(item)) = 1;
+%     end
+%     
+%     % Cost Function Unregularizated
+%     J_unreg = mean(sum( - log(h) .* class_y - log(1 - h) .* class_one_minus_y, 2));
+%     
+%     % Regular Term
+%     reg_term = (sum(sum(Theta1(:,2:end) .^2)) + sum(sum(Theta2(:,2:end) .^2))) * lambda / (2 * m);
+%     
+%     % Cost Function Unregularizated
+%     J = J_unreg + reg_term;
+%     
+%     % Gradient
+%     for i = 1:m
+%         a1 = X(i,:)';
+%         z2 = Theta1 * a1;
+%         a2 = sigmoid(z2);
+%         a2 = [1; a2];
+%         z3 = Theta2 * a2;
+%         a3 = sigmoid(z3);
+%     
+%         yi = zeros(num_labels, 1);
+%         yi(y(i)) = 1;
+%         delta3 = a3 - yi;
+%         
+%         temp = Theta2' * delta3;
+%         delta2 = temp(2:end) .* sigmoidGradient(z2);
+% 
+%         Theta1_grad = Theta1_grad + delta2 * a1';
+%         Theta2_grad = Theta2_grad + delta3 * a2';
+%     end
+% 
+%     % Gradient
+%     Theta1_grad = Theta1_grad / m;
+%     Theta2_grad = Theta2_grad / m;
+% 
+%     % Gradient Regularized
+%     Theta1_grad(:,2:end) = Theta1_grad(:,2:end) + lambda * Theta1(:,2:end) / m;
+%     Theta2_grad(:,2:end) = Theta2_grad(:,2:end) + lambda * Theta2(:,2:end) / m;
+%     
+%     % Unroll gradients
+%     grad = [Theta1_grad(:) ; Theta2_grad(:)];
+% 
 
 end
