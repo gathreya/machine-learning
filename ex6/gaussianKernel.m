@@ -16,6 +16,8 @@ sim = 0;
 %
 %
 
+numerator = sum((x1 - x2).^2);
+sim = exp(-numerator / ( 2 * sigma ^ 2));
 
 
 
